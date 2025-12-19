@@ -1,0 +1,10 @@
+langchain
+langchain-community
+langchain-openai
+sqlalchemy
+psycopg2-binary
+python-dotenv
+pandas
+matplotlib
+jupyter
+tiktoken

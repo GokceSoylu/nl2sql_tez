@@ -1,0 +1,20 @@
+﻿category_id;category_name;parent_category_id
+100;Elektronik;;
+101;Akıllı Telefonlar;100
+102;Aksesuarlar (Elektronik);100
+103;Beyaz Eşya;100
+104;Giyim;;
+105;Erkek Giyim;104
+106;Kadın Giyim;104
+107;Ayakkabı;104
+108;Ev & Yaşam;;
+109;Mutfak Gereçleri;108
+110;Dekorasyon;108
+111;Mobilya;108
+112;Kişisel Bakım;;
+113;Kozmetik;112
+114;Spor;;
+115;Erkek Bakım;112
+116;Spor Giyim;114
+117;Spor Aletleri;114
+118;Doğa Sporu;114

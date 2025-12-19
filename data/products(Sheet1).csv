@@ -1,0 +1,51 @@
+﻿product_id;name;description;brand_id;category_id;price;stock;rating
+101;Akıllı Saat Z10;Gelişmiş spor takip özellikleri.;2;102;4999.00;50;4.May
+102;Organik Pamuk Tişört;%100 Pamuk, nefes alabilir.;1;105;249.90;200;4.Ağu
+103;"4K Smart LED TV (55"")";Ultra HD görüntü kalitesi.;3;100;14999.00;20;4.Şub
+104;Koşu Ayakkabısı Pro;Yüksek performans, hafif tasarım.;4;107;1250.00;150;4.Haz
+105;Espresso Makinesi;Basit tek dokunuşla kahve keyfi.;5;109;3899.00;40;4.Mar
+106;Nemlendirici Cilt Kremi;Günlük nem dengesi.;6;113;199.50;300;4.Tem
+107;Yazlık Elbise;Rahat kesim, canlı renkler.;7;106;599.00;100;4.May
+108;Dijital Çizim Tableti;Yüksek hassasiyetli kalem.;8;102;2999.00;75;4.Oca
+109;Saksı Çiçeği Seti;Evde yetiştirmeye uygun 3'lü set.;9;110;150.00;120;4.Eyl
+110;Kablosuz Oyun Mouse'u;Hızlı tepki süresi.;2;102;899.00;60;4.Nis
+111;Lüks Yatak Örtüsü;Yumuşak dokulu, çift kişilik.;11;110;950.00;80;4.Tem
+112;Taşınabilir Şarj Aleti;20.000 mAh kapasite.;12;102;650.00;180;4.Haz
+113;Pamuklu Battaniye;Hafif ve sıcak tutan tasarım.;13;110;720.00;90;4.Ağu
+114;Ahşap El Yapımı Tepsi;Vintage görünümlü servis tepsisi.;14;109;350.00;50;4.May
+115;Akıllı Priz Seti (4'lü);Wi-Fi kontrollü prizler.;15;103;850.00;110;4.Nis
+116;Basic Siyah Pantolon;Slim fit, esnek kumaş.;7;105;450.00;160;4.Mar
+117;Cam Su Şişesi;1 litre, sızdırmaz kapak.;6;117;120.00;250;4.Eyl
+118;Termos Kupa;Sıcak/soğuk tutma özellikli.;5;118;420.00;70;4.May
+119;Tüy Hafifliği Eşofman;Koşu ve fitness için.;4;116;800.00;130;4.Tem
+120;Saç Şekillendirici Set;5 farklı başlık içerir.;12;115;1999.00;30;4.Şub
+121;Mutfak Robotu;Çok fonksiyonlu, güçlü motor.;3;109;5200.00;25;4.Oca
+122;Vegan Deri Çanta;Omuz askılı, günlük kullanım.;1;106;650.00;90;4.Haz
+123;Spor Tayt;Yüksek bel, esnek kumaş.;4;106;320.00;170;4.Nis
+124;Masa Lambası;Ayarlanabilir parlaklık.;11;110;490.00;140;4.Tem
+125;Gümüş Yüzük;Minimalist tasarım.;14;102;750.00;60;4.Eyl
+126;Tablet (10 inç);Yüksek çözünürlüklü ekran.;2;100;6999.00;45;4.Mar
+127;Kadın Parfümü (50 ml);Çiçeksi notalar.;15;113;550.00;110;4.Haz
+128;Erkek Tıraş Makinesi;Hassas ciltler için.;12;115;1200.00;85;4.May
+129;Akıllı Tartı;Vücut analizi özellikleri.;4;117;399.00;100;4.Ağu
+130;Dekoratif Duvar Saati;Modern tasarım.;11;110;280.00;70;4.Şub
+131;Laptop Çantası;15.6 inç uyumlu, su geçirmez.;2;102;450.00;120;4.May
+132;Boy Aynası;Büyük boy, çerçevesiz.;3;111;1800.00;30;4.Oca
+133;Yüz Temizleme Jeli;Ciltteki yağı arındırır.;6;113;140.00;220;4.Tem
+134;Baharat Seti (6'lı);Bambu standlı.;5;109;290.00;95;4.Nis
+135;Taktik Sırt Çantası;Outdoor kullanıma uygun.;10;118;999.00;60;4.Haz
+136;Yemek Takımı (6 kişilik);Porselen, günlük kullanım.;3;109;2500.00;40;4.May
+137;USB Bellek (128 GB);Yüksek hızlı veri transferi.;8;102;220.00;210;4.Tem
+138;Siyah Kışlık Bot;Su geçirmez, kaymaz taban.;7;107;1100.00;80;4.Mar
+139;Ofis Koltuğu;Ergonomik, bel destekli.;11;111;2990.00;25;4.0
+140;Erkek Güneş Gözlüğü;Polarize camlar.;14;102;850.00;50;4.Ağu
+141;Mini Buzdolabı;Ofis veya yatak odası için.;15;103;3500.00;35;4.Şub
+142;Yoga Matı;Kaydırmaz, kalın.;4;117;250.00;160;4.Eyl
+143;Dijital Fotoğraf Çerçevesi;Wi-Fi bağlantılı.;8;102;990.00;70;4.Nis
+144;Vücut Losyonu;Lavanta kokulu.;6;113;180.00;240;4.Haz
+145;Kamp Çadırı (4 kişilik);Hızlı kurulum.;10;118;1700.00;50;4.May
+146;Seramik Fincan Seti;4 adet el yapımı fincan.;14;109;450.00;60;4.Tem
+147;Gömlek (Mavi);Klasik kesim, ütü gerektirmez.;7;105;399.00;110;4.Mar
+148;Kulaklık (Kablosuz);Gürültü engelleme.;2;102;1599.00;90;4.Haz
+149;Robot Süpürge;Haritalama özellikli.;15;103;6800.00;30;4.Oca
+150;Tıraş Sonrası Losyon;Ferahlatıcı etki.;12;115;210.00;150;4.Tem

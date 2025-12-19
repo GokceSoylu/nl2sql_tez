@@ -1,0 +1,36 @@
+review_id,customer_id,product_id,rating,comment,review_date
+1,15,137,5,"Urun bekledigimden kaliteli cikti. Hizli gonderi icin tesekkurler.",2025-11-20
+2,3,114,4,"Ahsap tepsi cok sik duruyor. Mutfagima hava atti.",2025-11-21
+3,28,115,5,"Akilli priz seti harika. Uygulamasi cok kullanisli.",2025-11-22
+4,42,122,3,"Cantayi begendim ama ic astar biraz zayif.",2025-11-22
+5,19,138,5,"Kislik botlar cok sicak tutuyor ve rahat.",2025-11-23
+6,6,119,5,"Mutfak robotu hayatimizi kolaylastirdi. Kesinlikle tavsiye ederim.",2025-11-24
+7,33,126,4,"Tablet hizi iyi, fiyatina gore cok basarili.",2025-11-25
+8,47,127,2,"Parfumun kokusu kalici degil. Hayal kirikligi oldu.",2025-10-15
+9,11,148,5,"Kulaklik ses kalitesi mukemmel, sarji uzun gidiyor.",2025-11-26
+10,25,133,4,"Yuz temizleme jeli cildime iyi geldi. Kurutmadi.",2025-11-27
+11,15,146,5,"Fincan seti cok zarif ve kullanisli. Paketleme de cok iyiydi.",2025-11-28
+12,6,127,3,"Akilli tarti bazen yanlis olcum yapiyor gibi. Yine de fena degil.",2025-11-29
+13,3,140,5,"Yoga matini cok begendim. Kalinligi ve tutusu harika.",2025-11-30
+14,33,116,4,"Basic siyah pantolon tam bedenime oturdu. Malzemesi rahat.",2025-12-01
+15,28,125,5,"Gumus yuzuk parlakligi harika. Hediye olarak almistim, cok begenildi.",2025-12-02
+16,47,131,4,"Laptop cantasi kaliteli ve bol gozlu. Is icin ideal.",2025-12-03
+17,42,145,5,"Kamp cadiri genis ve kurulumu cok kolay oldu.",2025-12-04
+18,11,128,5,"Erkek tras makinesi cok sessiz ve hizli. Sonucu mukemmel.",2025-12-05
+19,19,130,4,"Dekoratif duvar saati evime modern bir hava katti.",2025-12-06
+20,25,124,3,"Masa lambasi isigi biraz yetersiz kaldi. Tasarimi guzel.",2025-12-07
+21,15,118,5,"Termos kupa kahvemi cok uzun sure sicak tuttu. Mukemmel urun!",2025-12-08
+22,6,147,4,"Mavi gomlek rengi cok canli. Kumas kalitesi iyi.",2025-12-09
+23,3,134,5,"Baharat seti mutfakta cok duzenli duruyor. Tam istedigim gibi.",2025-12-10
+24,33,136,4,"Yemek takimi sik ama birkac parcasinda kucuk cizikler vardi.",2025-12-11
+25,28,123,5,"Spor tayt kosu icin ideal. Esnek ve terletmiyor.",2025-12-12
+26,47,117,4,"Cam su sisesi saglam gorunuyor. Kapagi siki kapaniyor.",2025-12-13
+27,42,132,5,"Boy aynasi odami genis gosterdi. Bekledigimden buyuk geldi.",2025-12-14
+28,11,143,3,"Dijital fotograf cercevesi gorsel kalitesi daha iyi olabilirdi.",2025-12-15
+29,19,149,5,"Robot supurge performansi cok iyi. Evde buyuk kolaylik.",2025-12-16
+30,25,150,4,"Tiras sonrasi losyon cildi rahatlatiyor. Kokusu da guzel.",2025-12-17
+31,15,110,5,"Tüy hafifliği esofman takimi cok rahat. Evde giymek icin ideal.",2025-12-18
+32,6,120,5,"Sac sekillendirici set ile istedigim sekli kolayca verdim.",2025-12-19
+33,3,141,4,"Mini buzdolabi ofis icin mukemmel boyutta.",2025-12-20
+34,33,135,5,"Taktik sirt cantasi saglam ve ergonomik. Dogada kullaniyorum.",2025-12-21
+35,28,139,4,"Ofis koltugu rahat, ama montaji biraz zorladi.",2025-12-22

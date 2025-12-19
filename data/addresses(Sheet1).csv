@@ -1,0 +1,116 @@
+﻿address_id;customer_id;address_line;city;state;country;postal_code;address_type
+501;1;Lale Sokak No:5/A;İstanbul;İstanbul;Türkiye;34000;Home
+502;1;Merkez İş Hanı Kat:3;İstanbul;İstanbul;Türkiye;34010;Work
+503;2;Çınar Cad. B Blok D:12;Ankara;Ankara;Türkiye;6000;Home
+504;3;Gülşen Mah. 15. Sok. No:8;İzmir;İzmir;Türkiye;35000;Home
+505;4;Akdeniz Sok. No:22;Antalya;Antalya;Türkiye;7000;Home
+506;5;Şehitler Cad. No:10, A Apt.;Bursa;Bursa;Türkiye;16000;Home
+507;6;Karanfil Sk. 4. Blok;Adana;Adana;Türkiye;1000;Home
+508;7;Deniz Mah. Yeni Çarşı D:5;Muğla;Muğla;Türkiye;48000;Home
+509;8;Teknoloji Parkı Binası No:1;Kocaeli;Kocaeli;Türkiye;41000;Work
+510;8;Papatya Apt. No:1/B;Kocaeli;Kocaeli;Türkiye;41000;Home
+511;9;Gazi Bulvarı No:150;Mersin;Mersin;Türkiye;33000;Home
+512;10;Aydınlık Sok. D:7;Eskişehir;Eskişehir;Türkiye;26000;Home
+513;11;İpek Yolu Cad. No:33;Kayseri;Kayseri;Türkiye;38000;Home
+514;12;Selçuklu Sk. No:44;Konya;Konya;Türkiye;42000;Home
+515;13;Marmara Sk. No:12;Sakarya;Sakarya;Türkiye;54000;Home
+516;14;Cumhuriyet Mah. 55. Cad.;Samsun;Samsun;Türkiye;55000;Home
+517;15;Nilüfer Sk. No:2;Denizli;Denizli;Türkiye;20000;Home
+518;16;Atatürk Blv. No:18, C Blok;Gaziantep;Gaziantep;Türkiye;27000;Home
+519;17;Hürriyet Cad. No:100;Malatya;Malatya;Türkiye;44000;Home
+520;18;Sanayi Sk. 2. Bölge;Erzurum;Erzurum;Türkiye;25000;Home
+521;19;Üniversite Mah. No:1;Van;Van;Türkiye;65000;Home
+522;20;Yeşilova Sk. No:6;Diyarbakır;Diyarbakır;Türkiye;21000;Home
+523;21;Akarsu Cd. No:9/2;Balıkesir;Balıkesir;Türkiye;10000;Home
+524;22;Çağrı Merkezi Binası;İstanbul;İstanbul;Türkiye;34015;Work
+525;22;Huzur Mah. Yeni Sk. 17;İstanbul;İstanbul;Türkiye;34020;Home
+526;23;Kızılay İş Merkezi;Ankara;Ankara;Türkiye;6010;Work
+527;23;Dikmen Sk. No:2;Ankara;Ankara;Türkiye;6020;Home
+528;24;Alsancak Mah. 3. Sk.;İzmir;İzmir;Türkiye;35050;Home
+529;25;Muratpaşa Mah. 1. Cad.;Antalya;Antalya;Türkiye;7020;Home
+530;26;Çekirge Sk. No:3;Bursa;Bursa;Türkiye;16050;Home
+531;27;Seyhan Sk. 12/A;Adana;Adana;Türkiye;1020;Home
+532;28;Fethiye Sk. No:8;Muğla;Muğla;Türkiye;48050;Home
+533;29;Gebze Sk. No:1;Kocaeli;Kocaeli;Türkiye;41050;Home
+534;30;Forum Mersin Karşısı;Mersin;Mersin;Türkiye;33050;Work
+535;30;Yenişehir Sk. 9/C;Mersin;Mersin;Türkiye;33060;Home
+536;31;Tepebaşı Mah. 1. Yol;Eskişehir;Eskişehir;Türkiye;26050;Home
+537;32;Talas Mah. No:11;Kayseri;Kayseri;Türkiye;38050;Home
+538;33;Meram Sk. 2/B;Konya;Konya;Türkiye;42050;Home
+539;34;Adapazarı Merkez;Sakarya;Sakarya;Türkiye;54050;Home
+540;35;Atakum Sahil Yolu;Samsun;Samsun;Türkiye;55050;Home
+541;36;Pamukkale Mah.;Denizli;Denizli;Türkiye;20050;Home
+542;37;Şahinbey Mah.;Gaziantep;Gaziantep;Türkiye;27050;Home
+543;38;Yeşilyurt Mah. No:7;Malatya;Malatya;Türkiye;44050;Home
+544;39;Yakutiye Sk.;Erzurum;Erzurum;Türkiye;25050;Home
+545;40;İpekyolu Cd.;Van;Van;Türkiye;65050;Home
+546;41;Bağlar Mah. 1. Sk.;Diyarbakır;Diyarbakır;Türkiye;21050;Home
+547;42;Edremit Sk.;Balıkesir;Balıkesir;Türkiye;10050;Home
+548;43;Beylikdüzü OSB;İstanbul;İstanbul;Türkiye;34524;Work
+549;43;Avcılar Mah. No:3;İstanbul;İstanbul;Türkiye;34320;Home
+550;44;Çankaya İş Kulesi;Ankara;Ankara;Türkiye;6520;Work
+551;44;Keçiören Sk. 5/D;Ankara;Ankara;Türkiye;6050;Home
+552;45;Karşıyaka Mah.;İzmir;İzmir;Türkiye;35080;Home
+553;46;Alanya Sk. No:1;Antalya;Antalya;Türkiye;7400;Home
+554;47;İnegöl Cad. No:2;Bursa;Bursa;Türkiye;16400;Home
+555;48;Adana Organize Sanayi;Adana;Adana;Türkiye;1100;Work
+556;48;Kozan Sk. 11/B;Adana;Adana;Türkiye;1200;Home
+557;49;Bodrum Mah.;Muğla;Muğla;Türkiye;48400;Home
+558;50;İzmit Merkez;Kocaeli;Kocaeli;Türkiye;41100;Home
+559;51;Yenice Mah. 5. Yol;Mersin;Mersin;Türkiye;33500;Home
+560;52;Odunpazarı Evleri Sk.;Eskişehir;Eskişehir;Türkiye;26100;Home
+561;53;Kocasinan Sk. No:5;Kayseri;Kayseri;Türkiye;38100;Home
+562;54;Karatay Sk. 2/A;Konya;Konya;Türkiye;42100;Home
+563;55;Serdivan Mah.;Sakarya;Sakarya;Türkiye;54100;Home
+564;56;Bafra Cad. No:1;Samsun;Samsun;Türkiye;55300;Home
+565;57;Honaz Sk.;Denizli;Denizli;Türkiye;20100;Home
+566;58;Üniversite Mah. No:2;Gaziantep;Gaziantep;Türkiye;27200;Home
+567;59;Battalgazi Sk.;Malatya;Malatya;Türkiye;44100;Home
+568;60;Palandöken Sk.;Erzurum;Erzurum;Türkiye;25100;Home
+569;61;Erciş Sk.;Van;Van;Türkiye;65100;Home
+570;62;Silvan Sk.;Diyarbakır;Diyarbakır;Türkiye;21100;Home
+571;63;Ayvalık Mah.;Balıkesir;Balıkesir;Türkiye;10400;Home
+572;64;Beylikdüzü Mah.;İstanbul;İstanbul;Türkiye;34500;Home
+573;65;Çankaya Mah.;Ankara;Ankara;Türkiye;6600;Home
+574;66;Konak Mah.;İzmir;İzmir;Türkiye;35200;Home
+575;67;Kepez Mah.;Antalya;Antalya;Türkiye;7300;Home
+576;68;Nilüfer Mah.;Bursa;Bursa;Türkiye;16300;Home
+577;69;Çukurova Sk.;Adana;Adana;Türkiye;1300;Home
+578;70;Milas Sk.;Muğla;Muğla;Türkiye;48500;Home
+579;71;Başiskele Sk.;Kocaeli;Kocaeli;Türkiye;41200;Home
+580;72;Tarsus Sk.;Mersin;Mersin;Türkiye;33400;Home
+581;73;İnönü Cad. No:1;Eskişehir;Eskişehir;Türkiye;26150;Home
+582;74;Melikgazi Mah.;Kayseri;Kayseri;Türkiye;38200;Home
+583;75;Selçuklu Mah.;Konya;Konya;Türkiye;42200;Home
+584;76;Erenler Mah.;Sakarya;Sakarya;Türkiye;54200;Home
+585;77;Çarşamba Mah.;Samsun;Samsun;Türkiye;55500;Home
+586;78;Merkezefendi Mah.;Denizli;Denizli;Türkiye;20200;Home
+587;79;Nizip Sk.;Gaziantep;Gaziantep;Türkiye;27300;Home
+588;80;Darende Sk.;Malatya;Malatya;Türkiye;44200;Home
+589;81;Karayazı Sk.;Erzurum;Erzurum;Türkiye;25200;Home
+590;82;Gevaş Sk.;Van;Van;Türkiye;65200;Home
+591;83;Siverek Sk.;Diyarbakır;Diyarbakır;Türkiye;21200;Home
+592;84;Bandırma Mah.;Balıkesir;Balıkesir;Türkiye;10600;Home
+593;85;Kadıköy İş Merkezi;İstanbul;İstanbul;Türkiye;34710;Work
+594;85;Üsküdar Sk. No:2;İstanbul;İstanbul;Türkiye;34700;Home
+595;86;Yenimahalle Sk.;Ankara;Ankara;Türkiye;6700;Home
+596;87;Bornova Mah.;İzmir;İzmir;Türkiye;35500;Home
+597;88;Kaş Sk. No:5;Antalya;Antalya;Türkiye;7580;Home
+598;89;Gemlik Mah.;Bursa;Bursa;Türkiye;16600;Home
+599;90;Sarıçam Sk.;Adana;Adana;Türkiye;1400;Home
+600;91;Marmaris Sk.;Muğla;Muğla;Türkiye;48700;Home
+601;92;Kandıra Yolu;Kocaeli;Kocaeli;Türkiye;41300;Home
+602;93;Bozyazı Sk.;Mersin;Mersin;Türkiye;33800;Home
+603;94;Sivrihisar Sk.;Eskişehir;Eskişehir;Türkiye;26300;Home
+604;95;Develi Sk.;Kayseri;Kayseri;Türkiye;38300;Home
+605;96;Beyşehir Sk.;Konya;Konya;Türkiye;42300;Home
+606;97;Karasu Mah.;Sakarya;Sakarya;Türkiye;54500;Home
+607;98;Vezirköprü Sk.;Samsun;Samsun;Türkiye;55700;Home
+608;99;Çivril Sk.;Denizli;Denizli;Türkiye;20400;Home
+609;100;Karkamış Sk.;Gaziantep;Gaziantep;Türkiye;27400;Home
+610;11;Orta Mah. Çevre Yolu;Kayseri;Kayseri;Türkiye;38010;Work
+611;24;Ofis Binası D:101;İzmir;İzmir;Türkiye;35060;Work
+612;31;Sanayi Sitesi No:1;Eskişehir;Eskişehir;Türkiye;26060;Work
+613;41;Belediye Karşısı;Diyarbakır;Diyarbakır;Türkiye;21060;Work
+614;49;Merkez Plaza 5. Kat;Kocaeli;Kocaeli;Türkiye;41060;Work
+615;64;İş Merkezi C Blok;İstanbul;İstanbul;Türkiye;34505;Work
