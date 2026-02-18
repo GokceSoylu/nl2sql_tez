@@ -23,6 +23,10 @@ ChartJS.register(
   Legend
 );
 
+// ✅ Dark theme defaults (global)
+ChartJS.defaults.color = "rgba(226, 232, 240, 0.95)";
+ChartJS.defaults.borderColor = "rgba(148, 163, 184, 0.25)";
+ChartJS.defaults.plugins.legend.labels.color = "rgba(226, 232, 240, 0.95)";
 
 // Proxy kullanıyorsan boş bırak:
 // const API = "";
@@ -182,7 +186,6 @@ export default function App() {
   const [xKey, setXKey] = useState("");
   const [yKey, setYKey] = useState("");
 
-
   useEffect(() => {
     (async () => {
       try {
@@ -203,6 +206,7 @@ export default function App() {
     const tables = schema?.tables || [];
     return tables.find((x) => x.name === selectedTable) || null;
   }, [schema, selectedTable]);
+
   const columns = useMemo(() => {
     if (!rows?.length) return [];
     return Object.keys(rows[0] || {});
@@ -220,6 +224,17 @@ export default function App() {
       })
     );
   }, [rows]);
+
+  useEffect(() => {
+    if (!rows?.length) return;
+    const cols = Object.keys(rows[0] || {});
+    const numCols = numericColumns;
+
+    if (!xKey && cols.length) setXKey(cols[0]);
+    if (!yKey && numCols.length) setYKey(numCols[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, numericColumns]);
+
   const chartData = useMemo(() => {
     if (!rows?.length || !xKey || !yKey) return null;
 
@@ -229,35 +244,64 @@ export default function App() {
       return Number.isFinite(n) ? n : 0;
     });
 
+    // ✅ Pie için her dilime farklı renk
+    const pieColors = [
+      "rgba(99, 102, 241, 0.70)",   // indigo
+      "rgba(34, 211, 238, 0.70)",   // cyan
+      "rgba(16, 185, 129, 0.70)",   // emerald
+      "rgba(245, 158, 11, 0.75)",   // amber
+      "rgba(239, 68, 68, 0.75)",    // red
+      "rgba(168, 85, 247, 0.70)",   // purple
+      "rgba(236, 72, 153, 0.70)",   // pink
+      "rgba(59, 130, 246, 0.70)",   // blue
+      "rgba(163, 230, 53, 0.70)",   // lime
+      "rgba(250, 204, 21, 0.75)",   // yellow
+      "rgba(20, 184, 166, 0.70)",   // teal
+      "rgba(244, 63, 94, 0.70)",    // rose
+    ];
+
+    const bgColors = labels.map((_, i) => pieColors[i % pieColors.length]);
+    const bdColors = bgColors.map((c) => c.replace(/0\.\d+\)$/, "1)")); // alpha -> 1
+
+    // Bar/Line için tek renk, Pie için çok renk
+    const dataset =
+      chartType === "pie"
+        ? {
+          label: yKey,
+          data: values,
+          backgroundColor: bgColors,
+          borderColor: bdColors,
+          borderWidth: 1,
+        }
+        : {
+          label: yKey,
+          data: values,
+          backgroundColor: "rgba(99, 102, 241, 0.45)",
+          borderColor: "rgba(99, 102, 241, 0.95)",
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          tension: 0.25,
+        };
 
     return {
       labels,
-      datasets: [
-        {
-          label: yKey,
-          data: values,
-        },
-      ],
+      datasets: [dataset],
     };
-  }, [rows, xKey, yKey]);
+  }, [rows, xKey, yKey, chartType]);
+
+
   const chartOptions = useMemo(() => {
-    const textColor = "rgba(226, 232, 240, 0.95)";   // slate-200 gibi
-    const gridColor = "rgba(148, 163, 184, 0.15)";   // ince grid
-    const borderColor = "rgba(148, 163, 184, 0.35)"; // eksen çizgisi
+    const textColor = "rgba(226, 232, 240, 0.95)";
+    const gridColor = "rgba(148, 163, 184, 0.15)";
+    const borderColor = "rgba(148, 163, 184, 0.35)";
 
     return {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: {
-          labels: {
-            color: textColor,
-          },
-        },
-        tooltip: {
-          titleColor: textColor,
-          bodyColor: textColor,
-        },
+        legend: { labels: { color: textColor } },
+        tooltip: { titleColor: textColor, bodyColor: textColor },
       },
       scales: {
         x: {
@@ -273,21 +317,6 @@ export default function App() {
       },
     };
   }, []);
-
-
-
-
-  useEffect(() => {
-    // rows değişince otomatik seçim
-    if (!rows?.length) return;
-
-    const cols = Object.keys(rows[0] || {});
-    const numCols = numericColumns;
-
-    if (!xKey && cols.length) setXKey(cols[0]);
-    if (!yKey && numCols.length) setYKey(numCols[0]);
-  }, [rows, numericColumns]); // eslint-disable-line react-hooks/exhaustive-deps
-
 
   async function post(endpoint) {
     setBusy(true);
@@ -449,7 +478,9 @@ export default function App() {
           {/* Visualization */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
             <div className="flex items-center justify-between mb-3">
-              <div className="text-sm font-semibold text-slate-200">Görselleştirme</div>
+              <div className="text-sm font-semibold text-slate-200">
+                Görselleştirme
+              </div>
 
               <div className="flex items-center gap-2">
                 <select
@@ -491,23 +522,33 @@ export default function App() {
             </div>
 
             {!rows?.length ? (
-              <div className="text-sm text-slate-400">Grafik için önce bir sorgu çalıştır.</div>
+              <div className="text-sm text-slate-400">
+                Grafik için önce bir sorgu çalıştır.
+              </div>
             ) : !numericColumns.length ? (
               <div className="text-sm text-slate-400">
-                Bu sonuçta sayısal kolon bulunamadı. (Grafik için COUNT/SUM gibi bir alan lazım.)
+                Bu sonuçta sayısal kolon bulunamadı. (Grafik için COUNT/SUM gibi
+                bir alan lazım.)
               </div>
             ) : !chartData ? (
               <div className="text-sm text-slate-400">Grafik hazırlanıyor...</div>
             ) : (
-              <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 h-[360px]">
-                {chartType === "bar" && <Bar data={chartData} options={chartOptions} />}
-                {chartType === "line" && <Line data={chartData} options={chartOptions} />}
-                {chartType === "pie" && <Pie data={chartData} options={chartOptions} />}
-
+              <div
+                className="rounded-2xl border border-slate-800 bg-slate-950 p-4"
+                style={{ height: 380 }}
+              >
+                {chartType === "bar" && (
+                  <Bar data={chartData} options={chartOptions} height={340} />
+                )}
+                {chartType === "line" && (
+                  <Line data={chartData} options={chartOptions} height={340} />
+                )}
+                {chartType === "pie" && (
+                  <Pie data={chartData} options={chartOptions} height={340} />
+                )}
               </div>
             )}
           </div>
-
 
           {/* Results */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">

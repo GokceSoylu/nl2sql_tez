@@ -26,14 +26,27 @@ def health():
 
 @app.post("/generate-sql", response_model=SQLResponse)
 def generate_sql(req: SQLRequest):
-    try:
-        sql = generate_sql_from_question(
-            question=req.question,
-            schema=req.schema,
-            language=req.language,
-            context=req.context
-        )
-        return {"sql": sql}
-    except Exception as e:
-        traceback.print_exc()  # terminalde full hata
-        raise HTTPException(status_code=500, detail=str(e))
+    # ✅ backend memory context geldiyse prompt'a ekle
+    q = req.question
+
+    if req.context:
+        last_q = req.context.get("last_question")
+        last_sql = req.context.get("last_sql")
+        last_err = req.context.get("last_error")
+        last_preview = req.context.get("last_rows_preview")
+
+        context_block = "ÖNCEKİ BAĞLAM:\n"
+        if last_q:
+            context_block += f"- last_question: {last_q}\n"
+        if last_sql:
+            context_block += f"- last_sql: {last_sql}\n"
+        if last_err:
+            context_block += f"- last_error: {last_err}\n"
+        if last_preview:
+            context_block += f"- last_rows_preview:\n{last_preview}\n"
+
+        q = context_block + "\nŞİMDİKİ SORU:\n" + req.question
+
+    sql = generate_sql_from_question(q)
+    return {"sql": sql}
+
