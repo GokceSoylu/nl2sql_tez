@@ -1,4 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
+import { Bar, Line, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
+
 
 // Proxy kullanıyorsan boş bırak:
 // const API = "";
@@ -154,6 +178,11 @@ export default function App() {
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const [chartType, setChartType] = useState("bar"); // bar | line | pie
+  const [xKey, setXKey] = useState("");
+  const [yKey, setYKey] = useState("");
+
+
   useEffect(() => {
     (async () => {
       try {
@@ -174,6 +203,91 @@ export default function App() {
     const tables = schema?.tables || [];
     return tables.find((x) => x.name === selectedTable) || null;
   }, [schema, selectedTable]);
+  const columns = useMemo(() => {
+    if (!rows?.length) return [];
+    return Object.keys(rows[0] || {});
+  }, [rows]);
+
+  const numericColumns = useMemo(() => {
+    if (!rows?.length) return [];
+    const cols = Object.keys(rows[0] || {});
+    return cols.filter((c) =>
+      rows.some((r) => {
+        const v = r?.[c];
+        if (v === null || v === undefined) return false;
+        const n = Number(v);
+        return Number.isFinite(n);
+      })
+    );
+  }, [rows]);
+  const chartData = useMemo(() => {
+    if (!rows?.length || !xKey || !yKey) return null;
+
+    const labels = rows.map((r) => String(r?.[xKey] ?? ""));
+    const values = rows.map((r) => {
+      const n = Number(r?.[yKey]);
+      return Number.isFinite(n) ? n : 0;
+    });
+
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: yKey,
+          data: values,
+        },
+      ],
+    };
+  }, [rows, xKey, yKey]);
+  const chartOptions = useMemo(() => {
+    const textColor = "rgba(226, 232, 240, 0.95)";   // slate-200 gibi
+    const gridColor = "rgba(148, 163, 184, 0.15)";   // ince grid
+    const borderColor = "rgba(148, 163, 184, 0.35)"; // eksen çizgisi
+
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: textColor,
+          },
+        },
+        tooltip: {
+          titleColor: textColor,
+          bodyColor: textColor,
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: textColor },
+          grid: { color: gridColor },
+          border: { color: borderColor },
+        },
+        y: {
+          ticks: { color: textColor },
+          grid: { color: gridColor },
+          border: { color: borderColor },
+        },
+      },
+    };
+  }, []);
+
+
+
+
+  useEffect(() => {
+    // rows değişince otomatik seçim
+    if (!rows?.length) return;
+
+    const cols = Object.keys(rows[0] || {});
+    const numCols = numericColumns;
+
+    if (!xKey && cols.length) setXKey(cols[0]);
+    if (!yKey && numCols.length) setYKey(numCols[0]);
+  }, [rows, numericColumns]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   async function post(endpoint) {
     setBusy(true);
@@ -331,6 +445,69 @@ export default function App() {
               {sql || "-"}
             </pre>
           </div>
+
+          {/* Visualization */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-semibold text-slate-200">Görselleştirme</div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={chartType}
+                  onChange={(e) => setChartType(e.target.value)}
+                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100"
+                >
+                  <option value="bar">Bar</option>
+                  <option value="line">Line</option>
+                  <option value="pie">Pie</option>
+                </select>
+
+                <select
+                  value={xKey}
+                  onChange={(e) => setXKey(e.target.value)}
+                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100"
+                  disabled={!columns.length}
+                >
+                  {columns.map((c) => (
+                    <option key={c} value={c}>
+                      X: {c}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={yKey}
+                  onChange={(e) => setYKey(e.target.value)}
+                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-100"
+                  disabled={!numericColumns.length}
+                >
+                  {numericColumns.map((c) => (
+                    <option key={c} value={c}>
+                      Y: {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {!rows?.length ? (
+              <div className="text-sm text-slate-400">Grafik için önce bir sorgu çalıştır.</div>
+            ) : !numericColumns.length ? (
+              <div className="text-sm text-slate-400">
+                Bu sonuçta sayısal kolon bulunamadı. (Grafik için COUNT/SUM gibi bir alan lazım.)
+              </div>
+            ) : !chartData ? (
+              <div className="text-sm text-slate-400">Grafik hazırlanıyor...</div>
+            ) : (
+              <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 h-[360px]">
+                {chartType === "bar" && <Bar data={chartData} options={chartOptions} />}
+                {chartType === "line" && <Line data={chartData} options={chartOptions} />}
+                {chartType === "pie" && <Pie data={chartData} options={chartOptions} />}
+
+              </div>
+            )}
+          </div>
+
 
           {/* Results */}
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
