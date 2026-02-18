@@ -8,3 +8,6 @@ pandas
 matplotlib
 jupyter
 tiktoken
+fastapi
+uvicorn[standard]
+pydantic

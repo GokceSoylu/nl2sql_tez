@@ -43,6 +43,12 @@ public class Nl2SqlController {
     @PostMapping("/ask")
     public ResponseEntity<Nl2SqlResponse> ask(@RequestBody Nl2SqlRequest req) {
 
+        // schema boş geldiyse backend tarafında otomatik doldur
+        if (req.getSchema() == null || req.getSchema().isEmpty()) {
+            SchemaDto s = schemaService.loadPublicSchema();
+            req.setSchema(s.getTables());
+        }
+
         ResponseEntity<Nl2SqlResponse> gen = generateSql(req);
         if (!gen.getStatusCode().is2xxSuccessful() || gen.getBody() == null) {
             return gen;
@@ -50,20 +56,46 @@ public class Nl2SqlController {
 
         String sql = gen.getBody().getSql();
         if (sql == null || sql.trim().isEmpty()) {
-            return ResponseEntity.status(502).body(new Nl2SqlResponse("", List.of()));
+            return ResponseEntity.status(502)
+                    .body(new Nl2SqlResponse("", List.of(), "AI returned empty SQL"));
+        }
+
+        String normalized = sql.trim().toLowerCase();
+
+        // sadece SELECT çalıştır
+        if (!normalized.startsWith("select")) {
+            return ResponseEntity.badRequest()
+                    .body(new Nl2SqlResponse(sql, List.of(), "Only SELECT queries are allowed"));
+        }
+
+        // forbidden keyword kontrol (ek güvenlik)
+        for (String bad : FORBIDDEN) {
+            if (normalized.contains(bad)) {
+                return ResponseEntity.badRequest()
+                        .body(new Nl2SqlResponse(sql, List.of(), "Forbidden keyword detected: " + bad));
+            }
         }
 
         // limit yoksa ekle (max 100)
-        String lower = sql.trim().toLowerCase();
-        if (!lower.contains("limit")) {
+        if (!normalized.contains("limit")) {
             sql = sql.trim();
             if (!sql.endsWith(";"))
                 sql += ";";
             sql = sql.substring(0, sql.length() - 1) + "\nLIMIT 100;";
         }
 
-        List<Map<String, Object>> rows = sqlExecutionService.executeSelect(sql);
-        return ResponseEntity.ok(new Nl2SqlResponse(sql, rows));
+        try {
+            List<Map<String, Object>> rows = sqlExecutionService.executeSelect(sql);
+            return ResponseEntity.ok(new Nl2SqlResponse(sql, rows));
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            if (msg == null || msg.isBlank())
+                msg = "SQL execution failed";
+
+            // 422: SQL üretildi ama DB'de çalışmadı (ör: kolon yok)
+            return ResponseEntity.unprocessableEntity()
+                    .body(new Nl2SqlResponse(sql, List.of(), msg));
+        }
     }
 
     // Ortak fonksiyon: schema ekle -> AI -> güvenlik -> SQL dön
@@ -73,12 +105,25 @@ public class Nl2SqlController {
             return ResponseEntity.badRequest().body(new Nl2SqlResponse("", List.of()));
         }
 
-        // schema ekle
+        // ✅ schema ekle (Nl2SqlRequest List<TableDto> tuttuğu için tables set ediyoruz)
         SchemaDto schema = schemaService.loadPublicSchema();
-        req.setSchema(schema);
+        req.setSchema(schema.getTables());
 
         // AI -> SQL
-        Nl2SqlResponse aiResp = aiServiceClient.translate(req);
+        // !
+        // Nl2SqlResponse aiResp = aiServiceClient.translate(req);
+        // !
+        Nl2SqlResponse aiResp;
+        try {
+            aiResp = aiServiceClient.translate(req);
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            if (msg == null || msg.isBlank())
+                msg = "AI service call failed";
+            return ResponseEntity.status(502)
+                    .body(new Nl2SqlResponse("", List.of(), msg));
+        }
+
         String sql = (aiResp != null) ? aiResp.getSql() : null;
 
         if (sql == null || sql.trim().isEmpty()) {
@@ -99,7 +144,7 @@ public class Nl2SqlController {
             return ResponseEntity.status(400).body(new Nl2SqlResponse(sql, List.of()));
         }
 
-        // yasaklı keyword engeli
+        // yasaklı keyword engeli (daha güvenli kontrol)
         for (String kw : FORBIDDEN) {
             if (lower.contains(kw + " ") || lower.contains("\n" + kw + " ")) {
                 return ResponseEntity.status(400).body(new Nl2SqlResponse(sql, List.of()));

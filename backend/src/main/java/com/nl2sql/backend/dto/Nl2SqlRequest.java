@@ -1,15 +1,20 @@
 package com.nl2sql.backend.dto;
 
+import java.util.List;
+import com.nl2sql.backend.dto.SchemaDto.TableDto;
+
 public class Nl2SqlRequest {
 
     private String question;
-    private SchemaDto schema; // opsiyonel (AI kabul ediyorsa kullan)
+    private String language; // "tr" or "en"
+    private List<TableDto> schema; // optional
 
     public Nl2SqlRequest() {
     }
 
-    public Nl2SqlRequest(String question, SchemaDto schema) {
+    public Nl2SqlRequest(String question, String language, List<TableDto> schema) {
         this.question = question;
+        this.language = language;
         this.schema = schema;
     }
 
@@ -21,11 +26,20 @@ public class Nl2SqlRequest {
         this.question = question;
     }
 
-    public SchemaDto getSchema() {
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public List<TableDto> getSchema() {
         return schema;
     }
 
-    public void setSchema(SchemaDto schema) {
+    // ✅ DÜZELTİLEN KISIM: SchemaDto değil List<TableDto> almalı
+    public void setSchema(List<TableDto> schema) {
         this.schema = schema;
     }
 }

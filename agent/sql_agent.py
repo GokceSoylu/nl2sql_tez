@@ -1,39 +1,37 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text, inspect
 from langchain_openai import ChatOpenAI
 import pandas as pd
-import matplotlib.pyplot as plt
 
 load_dotenv()
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+# DB_USER = os.getenv("DB_USER")
+# DB_PASSWORD = os.getenv("DB_PASSWORD")
+# DB_HOST = os.getenv("DB_HOST")
+# DB_PORT = os.getenv("DB_PORT")
+# DB_NAME = os.getenv("DB_NAME")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-engine = create_engine(DATABASE_URL)
+# DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# engine = create_engine(DATABASE_URL)
 
 
-def get_schema_description() -> str:
-    """Veritabanı şemasını otomatik çıkar (tablo & kolon isimleri)."""
-    insp = inspect(engine)
-    lines = []
-    for table_name in insp.get_table_names():
-        lines.append(f"TABLE {table_name}")
-        cols = insp.get_columns(table_name)
-        for col in cols:
-            col_name = col["name"]
-            col_type = str(col["type"])
-            lines.append(f"  - {col_name}: {col_type}")
-        lines.append("")
-    return "\n".join(lines)
+# def get_schema_description() -> str:
+#     """Veritabanı şemasını otomatik çıkar (tablo & kolon isimleri)."""
+#     insp = inspect(engine)
+#     lines = []
+#     for table_name in insp.get_table_names():
+#         lines.append(f"TABLE {table_name}")
+#         cols = insp.get_columns(table_name)
+#         for col in cols:
+#             col_name = col["name"]
+#             col_type = str(col["type"])
+#             lines.append(f"  - {col_name}: {col_type}")
+#         lines.append("")
+#     return "\n".join(lines)
 
 
-SCHEMA_TEXT = get_schema_description()
+# SCHEMA_TEXT = get_schema_description()
 
 # === Türkçe kolon adları / alias mapping ===
 # Kullanıcının "müşteri adı" demesi → customer_name kolonuna map edelim gibi.
@@ -107,6 +105,27 @@ COLUMN_ALIASES = {
     "gönderi tarihi": "shipment_date",
     "kargo maliyeti": "freight_cost",
 }
+def schema_to_text(schema) -> str:
+    """
+    schema: backend'in gönderdiği yapı:
+    [
+      {"name": "customers", "columns": ["customer_id", "name", ...]},
+      ...
+    ]
+    """
+    if not schema:
+        return "SCHEMA NOT PROVIDED"
+
+    lines = []
+    for t in schema:
+        # t dict ise
+        name = t.get("name") if isinstance(t, dict) else getattr(t, "name", "")
+        cols = t.get("columns") if isinstance(t, dict) else getattr(t, "columns", [])
+        lines.append(f"TABLE {name}")
+        for c in cols or []:
+            lines.append(f"  - {c}")
+        lines.append("")
+    return "\n".join(lines)
 
 
 def apply_aliases_to_question(question: str) -> str:
@@ -126,58 +145,33 @@ llm = ChatOpenAI(
 )
 
 
-def generate_sql_from_question(question: str) -> str:
+def generate_sql_from_question(question: str, schema=None, language: str = "tr", context=None) -> str:
     """
-    1) Türkçe soruyu alias'lardan geçir
-    2) Gelişmiş Türkçe system prompt ile SQL üret
+    - Kullanıcı sorusunu alias'larla normalize eder
+    - Schema'yı request'ten alır (DB'ye bağlanmaz)
+    - SADECE SELECT üretir
     """
     normalized_question = apply_aliases_to_question(question)
+    schema_text = schema_to_text(schema)
 
     system_prompt = f"""
 Sen bir PostgreSQL uzmanısın ve e-ticaret veritabanı için SQL sorguları üretiyorsun.
 
-Elindeki veritabanı şeması:
-
-{SCHEMA_TEXT}
-
-===========================================================
-❗ KESİN VE DEĞİŞTİRİLEMEZ TALİMATLAR ❗
-===========================================================
-
-1) Kullanıcı SELECT türü bir soru sorarsa:
-   → SADECE SELECT sorgusu üret.
-
-2) Kullanıcı aşağıdaki kelimelerden birini kullanırsa:
-   "sil", "tabloyu sil", "kaldır", 
-   "delete", "drop", "truncate",
-   "her şeyi sil", "tümünü sil"
-
-   → MUTLAKA destructive SQL üret:
-     - DELETE FROM ...
-     - DROP TABLE ...
-     - TRUNCATE TABLE ...
-
-   ⚠ ASLA SELECT ile değiştirme.
-   ⚠ ASLA açıklama ekleme.
-   ⚠ ASLA uyarı veya yorum satırı ekleme.
-   ⚠ SADECE saf SQL çıktısı üret.
-
-   ÖRNEK:
-   "products tablosunu sil" →  DROP TABLE products;
-   "products içindeki tüm ürünleri sil" → DELETE FROM products;
-
-3) Çıktı formatı:
-   → HER ZAMAN ```sql ... ``` bloğu içinde OLACAK.
-
-4) join gerektiğinde doğru foreign key'leri kullan.
-
-5) Tahmin edemiyorsan en mantıklı SQL'i üret.
+Veritabanı şeması:
+{schema_text}
 
 ===========================================================
+KESİN TALİMATLAR
+===========================================================
 
-Lütfen sadece saf SQL çıktısı üret.
+1) SADECE SELECT sorgusu üret. (INSERT/UPDATE/DELETE/DROP vb. ASLA yazma)
+2) Açıklama yazma, sadece SQL döndür.
+3) Çıktı HER ZAMAN ```sql ... ``` bloğu içinde olsun.
+4) JOIN gerekiyorsa uygun foreign key kolonlarını kullan.
+5) LIMIT yoksa uygun bir LIMIT ekle (örn: 10/50/100).
+6) Şemada olmayan kolonları KULLANMA.
+
 """
-
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -186,8 +180,9 @@ Lütfen sadece saf SQL çıktısı üret.
 
     response = llm.invoke(messages)
     content = response.content
-    print("LLM RAW OUTPUT:\n", content)#new 
 
+    # debug için görmek istersen açık kalsın:
+    print("LLM RAW OUTPUT:\n", content)
 
     start = content.find("```sql")
     if start != -1:
@@ -198,6 +193,7 @@ Lütfen sadece saf SQL çıktısı üret.
         sql = content.strip()
 
     return sql
+
 
 # ============================================================
 # SQL SAFETY FILTER
