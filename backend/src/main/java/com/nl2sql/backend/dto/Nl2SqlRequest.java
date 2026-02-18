@@ -1,7 +1,6 @@
 package com.nl2sql.backend.dto;
 
 import java.util.List;
-import java.util.Map;
 import com.nl2sql.backend.dto.SchemaDto.TableDto;
 
 public class Nl2SqlRequest {
@@ -9,9 +8,6 @@ public class Nl2SqlRequest {
     private String question;
     private String language; // "tr" or "en"
     private List<TableDto> schema; // optional
-
-    // ✅ Memory context (backend dolduracak)
-    private Map<String, Object> context; // optional
 
     public Nl2SqlRequest() {
     }
@@ -44,13 +40,5 @@ public class Nl2SqlRequest {
 
     public void setSchema(List<TableDto> schema) {
         this.schema = schema;
-    }
-
-    public Map<String, Object> getContext() {
-        return context;
-    }
-
-    public void setContext(Map<String, Object> context) {
-        this.context = context;
     }
 }
