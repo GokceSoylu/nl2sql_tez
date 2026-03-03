@@ -1,40 +1,18 @@
+# filename: agent/sql_agent.py
 import os
+import re
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-import pandas as pd
 
 load_dotenv()
 
-# DB_USER = os.getenv("DB_USER")
-# DB_PASSWORD = os.getenv("DB_PASSWORD")
-# DB_HOST = os.getenv("DB_HOST")
-# DB_PORT = os.getenv("DB_PORT")
-# DB_NAME = os.getenv("DB_NAME")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-# engine = create_engine(DATABASE_URL)
+# Debug log (ENV: SQL_AGENT_DEBUG=1)
+DEBUG = os.getenv("SQL_AGENT_DEBUG", "0") == "1"
 
-
-# def get_schema_description() -> str:
-#     """Veritabanı şemasını otomatik çıkar (tablo & kolon isimleri)."""
-#     insp = inspect(engine)
-#     lines = []
-#     for table_name in insp.get_table_names():
-#         lines.append(f"TABLE {table_name}")
-#         cols = insp.get_columns(table_name)
-#         for col in cols:
-#             col_name = col["name"]
-#             col_type = str(col["type"])
-#             lines.append(f"  - {col_name}: {col_type}")
-#         lines.append("")
-#     return "\n".join(lines)
-
-
-# SCHEMA_TEXT = get_schema_description()
 
 # === Türkçe kolon adları / alias mapping ===
-# Kullanıcının "müşteri adı" demesi → customer_name kolonuna map edelim gibi.
 COLUMN_ALIASES = {
     # Customers
     "müşteri adı": "name",
@@ -105,9 +83,11 @@ COLUMN_ALIASES = {
     "gönderi tarihi": "shipment_date",
     "kargo maliyeti": "freight_cost",
 }
+
+
 def schema_to_text(schema) -> str:
     """
-    schema: backend'in gönderdiği yapı:
+    schema (FastAPI request'ten gelir):
     [
       {"name": "customers", "columns": ["customer_id", "name", ...]},
       ...
@@ -118,7 +98,6 @@ def schema_to_text(schema) -> str:
 
     lines = []
     for t in schema:
-        # t dict ise
         name = t.get("name") if isinstance(t, dict) else getattr(t, "name", "")
         cols = t.get("columns") if isinstance(t, dict) else getattr(t, "columns", [])
         lines.append(f"TABLE {name}")
@@ -129,15 +108,18 @@ def schema_to_text(schema) -> str:
 
 
 def apply_aliases_to_question(question: str) -> str:
-    """Kullanıcının Türkçe sorusundaki alan isimlerini bilinen kolonlara çevir."""
-    q = question.lower()
+    """
+    Kullanıcının Türkçe sorusundaki alan ifadelerini kolon adlarına çevirir.
+    Basit replace kullanır.
+    """
+    q = (question or "").lower()
     for turkce, kolon in COLUMN_ALIASES.items():
         if turkce in q:
             q = q.replace(turkce, kolon)
     return q
 
 
-# LLM
+# LLM (LangChain)
 llm = ChatOpenAI(
     model="gpt-4.1-mini",
     temperature=0,
@@ -145,14 +127,89 @@ llm = ChatOpenAI(
 )
 
 
-def generate_sql_from_question(question: str, schema=None, language: str = "tr", context=None) -> str:
+def _extract_sql_from_llm_output(content: str) -> str:
     """
-    - Kullanıcı sorusunu alias'larla normalize eder
-    - Schema'yı request'ten alır (DB'ye bağlanmaz)
-    - SADECE SELECT üretir
+    LLM çıktısından SQL'i çıkarır:
+    - ```sql ... ``` varsa onu alır
+    - yoksa tüm içeriği alır
+    Ayrıca:
+    - baştaki/sondaki boşlukları temizler
+    - en sonda tek bir ';' bırakacak şekilde normalize eder
+    - çoklu statement riskini azaltmak için ilk ';' sonrası kırpar (defense-in-depth)
+    """
+    if not content:
+        return ""
+
+    # Code block içini çek
+    idx = content.find("```sql")
+    if idx != -1:
+        start = content.find("\n", idx)
+        end = content.find("```", start)
+        sql = content[start:end].strip() if start != -1 and end != -1 else content.strip()
+    else:
+        sql = content.strip()
+
+    # Çoklu statement varsa ilk ';' sonrası at (backend zaten engelliyor ama extra koruma)
+    # (Sondaki ; hariç) -> ilk ; bulunduğunda sadece ilk statement kalsın.
+    semi = sql.find(";")
+    if semi != -1:
+        sql = sql[:semi + 1].strip()
+
+    # Eğer hiç ';' yoksa ekleme (backend limit eklerken kendisi ; ekliyor)
+    # Ama tek statement normalize etmek için sonuna ; eklemek de sorun değil.
+    # Backend'in semicolon check'i: "sondaki ; hariç ; varsa hata"
+    # -> burada sadece tek ';' bırakıyoruz.
+    if not sql.endswith(";"):
+        sql = sql.strip()
+        # Yalnızca SELECT ise ; ekle
+        if sql.lower().startswith("select"):
+            sql = sql + ";"
+
+    return sql.strip()
+
+
+def _ensure_select_only(sql: str) -> str:
+    """
+    Backend zaten kontrol ediyor; ama AI service tarafında da uyumluluk için:
+    - SQL'in SELECT ile başlamasını zorunlu kıl
+    - Başta BOM/whitespace gibi şeyler varsa temizle
+    """
+    if not sql:
+        return ""
+
+    # Başta BOM vs temizle
+    sql = sql.lstrip("\ufeff").strip()
+
+    # Bazı LLM'ler 'SQL:' gibi prefix koyabilir; onu ayıkla
+    sql = re.sub(r"^\s*(sql\s*:\s*)", "", sql, flags=re.IGNORECASE).strip()
+
+    # Eğer hala select ile başlamıyorsa, boş dönelim (backend 502/400 verebilir)
+    if not sql.lower().startswith("select"):
+        return ""
+
+    return sql
+
+
+def generate_sql_from_question(
+    question: str,
+    schema=None,
+    language: str = "tr",
+    context=None
+) -> str:
+    """
+    FastAPI /generate-sql endpoint'inin çağırdığı ana fonksiyon.
+    - DB'ye bağlanmaz
+    - Sadece SELECT SQL üretir
+    - schema: backend'den gelen tablo/kolon listesi
+    - context: şimdilik opsiyonel (senin backend şu an null gönderiyor)
     """
     normalized_question = apply_aliases_to_question(question)
     schema_text = schema_to_text(schema)
+
+    # Context şimdilik opsiyonel (ileride backend context gönderirse kullanılır)
+    context_text = ""
+    if context:
+        context_text = f"\nÖNCEKİ BAĞLAM:\n{context}\n"
 
     system_prompt = f"""
 Sen bir PostgreSQL uzmanısın ve e-ticaret veritabanı için SQL sorguları üretiyorsun.
@@ -163,237 +220,33 @@ Veritabanı şeması:
 ===========================================================
 KESİN TALİMATLAR
 ===========================================================
-
 1) SADECE SELECT sorgusu üret. (INSERT/UPDATE/DELETE/DROP vb. ASLA yazma)
 2) Açıklama yazma, sadece SQL döndür.
 3) Çıktı HER ZAMAN ```sql ... ``` bloğu içinde olsun.
 4) JOIN gerekiyorsa uygun foreign key kolonlarını kullan.
 5) LIMIT yoksa uygun bir LIMIT ekle (örn: 10/50/100).
 6) Şemada olmayan kolonları KULLANMA.
+7) Tek statement üret. (Birden fazla sorgu yazma.)
+"""
 
+    user_prompt = f"""{context_text}
+SORU ({language}):
+{normalized_question}
 """
 
     messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": normalized_question},
+        {"role": "system", "content": system_prompt.strip()},
+        {"role": "user", "content": user_prompt.strip()},
     ]
 
     response = llm.invoke(messages)
-    content = response.content
+    content = getattr(response, "content", "")
 
-    # debug için görmek istersen açık kalsın:
-    print("LLM RAW OUTPUT:\n", content)
+    if DEBUG:
+        print("LLM RAW OUTPUT:\n", content)
 
-    start = content.find("```sql")
-    if start != -1:
-        start = content.find("\n", start)
-        end = content.find("```", start)
-        sql = content[start:end].strip()
-    else:
-        sql = content.strip()
+    sql = _extract_sql_from_llm_output(content)
+    sql = _ensure_select_only(sql)
 
+    # Son güvenlik: boşsa boş döndür
     return sql
-
-
-# ============================================================
-# SQL SAFETY FILTER
-# ============================================================
-
-DANGEROUS_SQL_KEYWORDS = [
-    "insert", "update", "delete", "drop", "alter", "truncate",
-    "create", "replace", "rename"
-]
-
-def is_sql_safe(sql: str) -> bool:
-    """Destructive SQL komutlarını tespit eder. Yorum satırlarını da kontrol eder."""
-    sql_lower = sql.lower()
-
-    # Yorumları kaldır ( -- ile başlayan satırlar )
-    lines = sql_lower.split("\n")
-    cleaned_lines = [line.split("--")[0].strip() for line in lines]
-    cleaned_sql = " ".join(cleaned_lines)
-
-    # Destructive keyword kontrolü
-    return not any(keyword in cleaned_sql for keyword in DANGEROUS_SQL_KEYWORDS)
-
-
-def run_sql(sql: str):
-    """SQL'i veritabanında çalıştır ve sonucu döndür."""
-    with engine.connect() as conn:
-        result = conn.execute(text(sql))
-        rows = result.fetchall()
-        columns = result.keys()
-    return [dict(zip(columns, row)) for row in rows]
-
-
-def try_fix_sql_on_error(sql: str, error_message: str, question: str):
-    """
-    Hatalı SQL geldiğinde, hatayı LLM'e açıklayıp düzeltmesini iste.
-    Bu kısım: 'hatalı sorgu düzeltme mekanizması'
-    """
-    fix_prompt = f"""
-Aşağıda PostgreSQL için üretilmiş bir SQL sorgusu var, fakat hata verdi.
-
-Orijinal Türkçe soru:
-{question}
-
-Üretilen SQL:
-{sql}
-
-Hata mesajı:
-{error_message}
-
-Görevin:
-- Bu hatayı düzelten, geçerli ve çalışan YENİ bir SQL sorgusu üret.
-- Yine sadece SELECT sorgusu yaz.
-- Yine ```sql ... ``` bloğu içinde ver.
-"""
-
-    messages = [
-        {"role": "system", "content": fix_prompt},
-        {"role": "user", "content": "Lütfen hatayı düzeltilmiş yeni SQL sorgusunu yaz."},
-    ]
-    response = llm.invoke(messages)
-    content = response.content
-
-    start = content.find("```sql")
-    if start != -1:
-        start = content.find("\n", start)
-        end = content.find("```", start)
-        fixed_sql = content[start:end].strip()
-    else:
-        fixed_sql = content.strip()
-
-    return fixed_sql
-
-# ============================================================
-# MEMORY SISTEMI
-# ============================================================
-
-class SQLMemory:
-    """
-    En son yapılan sorgu, en son üretilen SQL, en son sonuç gibi bilgileri saklar.
-    Bu, bağlamlı (contextual) sorgular için temel hafızadır.
-    """
-
-    def __init__(self):
-        self.last_question = None
-        self.last_sql = None
-        self.last_result = None
-
-    def save(self, question, sql, result):
-        self.last_question = question
-        self.last_sql = sql
-        self.last_result = result
-
-    def has_memory(self):
-        return self.last_question is not None
-
-    def get_context(self):
-        return {
-            "last_question": self.last_question,
-            "last_sql": self.last_sql,
-            "last_result": self.last_result,
-        }
-
-
-# global memory instance:
-memory = SQLMemory()
-
-
-def ask(question: str):
-    GRAPH_KEYWORDS = ["grafik", "çiz", "chart", "görselleştir", "plot"]
-
-    def is_graph_request(question: str):
-        return any(word in question.lower() for word in GRAPH_KEYWORDS)
-
-    context_text = ""
-    if memory.has_memory():
-        ctx = memory.get_context()
-        context_text = f"""
-ÖNCEKİ SORU: {ctx['last_question']}
-ÖNCEKİ ÜRETİLEN SQL: {ctx['last_sql']}
-ÖNCEKİ SONUÇ: {ctx['last_result']}
-"""
-
-    new_question = context_text + "\nŞİMDİKİ SORU: " + question
-    sql = generate_sql_from_question(new_question)
-
-    print("\n--- Üretilen SQL ---")
-    print(sql)
-    print("--------------------\n")
-
-    # 🔥 GÜVENLİK FİLTRESİ → TRY BLOĞUNDAN ÖNCE OLMALI
-    if not is_sql_safe(sql):
-        return {
-            "uyari": "Bu sorgu güvenlik nedeniyle engellendi (destructive SQL tespit edildi).",
-            "uretilen_sql": sql
-        }
-
-    # SQL çalıştırma
-    try:
-        rows = run_sql(sql)
-
-    except Exception as e:
-        print("İlk SQL hata verdi, düzeltmeyi deniyorum...")
-        fixed_sql = try_fix_sql_on_error(sql, str(e), question)
-
-        print("\n--- Düzeltilmiş SQL ---")
-        print(fixed_sql)
-        print("-----------------------\n")
-
-        if not is_sql_safe(fixed_sql):
-            return {
-                "uyari": "Düzeltilen SQL destructive olduğu için engellendi.",
-                "duzeltilen_sql": fixed_sql
-            }
-
-        rows = run_sql(fixed_sql)
-        sql = fixed_sql
-
-    # Grafik çizme
-    if is_graph_request(question):
-        df = dataframe_from_result(rows)
-        cols = df.columns.tolist()
-        x = cols[0] if cols else None
-        y = cols[-1] if cols else None
-        print(f"\nGrafik oluşturuluyor... X={x}, Y={y}")
-        plot_dataframe(df, x=x, y=y)
-
-    memory.save(question, sql, rows)
-    return rows
-
-
-
-
-
-def dataframe_from_result(rows: list):
-    """LLM'den dönen SQL sonuçlarını Pandas DataFrame'e dönüştürür."""
-    if not rows:
-        return pd.DataFrame()
-    return pd.DataFrame(rows)
-
-
-def plot_dataframe(df: pd.DataFrame, x=None, y=None, kind="bar", title="Grafik"):
-    """Her türlü tabloyu otomatik grafiğe dönüştüren motor."""
-    
-    if df.empty:
-        print("Grafik oluşturulamadı: DataFrame boş.")
-        return
-    
-    plt.figure(figsize=(10,5))
-    
-    if kind == "bar":
-        df.plot(kind="bar", x=x, y=y, legend=False)
-    elif kind == "line":
-        df.plot(kind="line", x=x, y=y)
-    elif kind == "pie":
-        df.set_index(x)[y].plot(kind="pie", autopct="%1.1f%%")
-    else:
-        df.plot()
-    
-    plt.title(title)
-    plt.xlabel(x)
-    plt.ylabel(y)
-    plt.tight_layout()
-    plt.show()
