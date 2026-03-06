@@ -1,4 +1,3 @@
-# filename: agent/sql_agent.py
 import os
 import re
 from dotenv import load_dotenv
@@ -20,7 +19,7 @@ COLUMN_ALIASES = {
     "müşteri mail": "email",
     "mail": "email",
     "telefon": "phone",
-    "cinsiyet": "gender",
+    "cinsiyet": "gender", 
     "doğum tarihi": "birth_date",
     "kayıt tarihi": "register_date",
 
@@ -201,7 +200,7 @@ def generate_sql_from_question(
     - DB'ye bağlanmaz
     - Sadece SELECT SQL üretir
     - schema: backend'den gelen tablo/kolon listesi
-    - context: şimdilik opsiyonel (senin backend şu an null gönderiyor)
+    - context: şimdilik opsiyonel ( backend şu an null gönderiyor)
     """
     normalized_question = apply_aliases_to_question(question)
     schema_text = schema_to_text(schema)
