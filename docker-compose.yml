@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # --- Veritabanı ---
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: nl2sql-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: nl2sql_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # SQL dump dosyanız varsa otomatik içeri aktarılması için:
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - nl2sql-net
+
+  # --- Yapay Zeka Servisi (FastAPI/LangChain) ---
+  ai-service:
+    build:
+      context: .
+      dockerfile: ./ai_service/Dockerfile
+    container_name: nl2sql-ai
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    networks:
+      - nl2sql-net
+
+  # --- Backend Servisi (Spring Boot) ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nl2sql-backend
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/nl2sql_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password123
+      AI_SERVICE_URL: http://ai-service:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-db
+      - ai-service
+    networks:
+      - nl2sql-net
+
+  # --- Frontend (React) ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nl2sql-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - nl2sql-net
+
+volumes:
+  pgdata:
+
+networks:
+  nl2sql-net:
+    driver: bridge
