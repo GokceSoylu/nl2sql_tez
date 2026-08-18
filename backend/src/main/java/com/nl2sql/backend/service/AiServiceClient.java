@@ -8,6 +8,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,24 +26,22 @@ public class AiServiceClient {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
 
-        // Localhost/127.0.0.1 gelirse veya boşsa Render canlı AI adresine yönlendir
-        if (baseUrl == null || baseUrl.isBlank() || baseUrl.contains("localhost") || baseUrl.contains("127.0.0.1")) {
+        String cleanUrl = (baseUrl != null) ? baseUrl.trim() : "";
+        if (cleanUrl.isEmpty() || cleanUrl.contains("localhost") || cleanUrl.contains("127.0.0.1")) {
             this.baseUrl = "https://nl2sql-ai-0n39.onrender.com";
         } else {
-            this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+            this.baseUrl = cleanUrl.endsWith("/") ? cleanUrl.substring(0, cleanUrl.length() - 1) : cleanUrl;
         }
     }
 
     public Nl2SqlResponse translate(Nl2SqlRequest req) {
         try {
-            // FastAPI payload
             Map<String, Object> payload = new HashMap<>();
             payload.put("question", req.getQuestion());
             payload.put("language", req.getLanguage());
             payload.put("schema", req.getSchema());
             payload.put("context", null);
 
-            // JSON string serialize
             String json = objectMapper.writeValueAsString(payload);
 
             HttpHeaders headers = new HttpHeaders();
@@ -51,11 +50,10 @@ public class AiServiceClient {
 
             HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
-            System.out.println("AI CLIENT CALLED ✅ baseUrl=" + baseUrl);
-            System.out.println("AI REQUEST JSON LEN=" + json.length());
+            URI targetUri = URI.create(this.baseUrl + "/generate-sql");
 
             ResponseEntity<Nl2SqlResponse> resp = restTemplate.exchange(
-                    baseUrl + "/generate-sql",
+                    targetUri,
                     HttpMethod.POST,
                     entity,
                     Nl2SqlResponse.class);
