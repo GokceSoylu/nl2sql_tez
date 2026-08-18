@@ -31,7 +31,7 @@ ChartJS.defaults.plugins.legend.labels.color = "rgba(226, 232, 240, 0.95)";
 // Proxy kullanıyorsan boş bırak:
 // const API = "";
 // Proxy yoksa 8081:
-const API = import.meta.env.VITE_API_BASE_URL || 'https://nl2sql-backend-ctfd.onrender.com';
+const API = 'https://nl2sql-backend-ctfd.onrender.com';
 
 const STR = {
   tr: {
