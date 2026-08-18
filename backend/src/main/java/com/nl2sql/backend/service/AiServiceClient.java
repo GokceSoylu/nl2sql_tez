@@ -26,7 +26,8 @@ public class AiServiceClient {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
 
-        String cleanUrl = (baseUrl != null) ? baseUrl.trim() : "";
+        // Köşeli parantez veya markdown artıklarını temizle
+        String cleanUrl = baseUrl.replaceAll("[\\[\\]\\(\\)]", "").trim();
         if (cleanUrl.isEmpty() || cleanUrl.contains("localhost") || cleanUrl.contains("127.0.0.1")) {
             this.baseUrl = "https://nl2sql-ai-0n39.onrender.com";
         } else {
